@@ -42,7 +42,7 @@ async def on_ready(): # EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLIN
 #	if message.content == "hello": # CHECKS IF THE MESSAGE THAT WAS SENT IS EQUAL TO "HELLO"
 #		await message.channel.send("hey dirtbag") # SENDS BACK A MESSAGE TO THE CHANNEL
 
-@bot.command()
+@bot.command(name="time", help="Displays basic stats for scum server <int, defaults to 28487222 (Palfy)>")
 async def time(ctx, server_id: int = 28487222):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
 	response = json.loads(response.text)

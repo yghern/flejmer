@@ -2,6 +2,7 @@ FROM python:3.12-slim
 FROM gorialis/discord.py
 
 ENV PYTHONUNBUFFERED=1
+ENV TZ="Europe/Warsaw"
 
 # prepare stages
 RUN mkdir -p /usr/src/bot

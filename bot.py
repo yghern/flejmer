@@ -50,27 +50,44 @@ async def time(ctx, server_id: int = 28487222):
 	server_time = response["data"]["attributes"]["details"]["time"]
 	server_time_hours = int(server_time.split(":")[0])
 	time_to_dawn = hours_to_dawn(server_time_hours)
+	time_to_restart = hours_to_restart()
 	server_players = response["data"]["attributes"]["players"]
 	server_maxplayers = response["data"]["attributes"]["maxPlayers"]
 	battlemetrics_url = f"https://www.battlemetrics.com/servers/scum/{server_id}"
-	message_line = f"{server_name} current time {server_time}{time_to_dawn} active players {server_players}/{server_maxplayers}"
+	message_line = f"{server_name} current time {server_time}{time_to_dawn} active players {server_players}/{server_maxplayers}{time_to_restart}"
 	url_line = f"{battlemetrics_url}"
 	message_content = f"{message_line}\n{url_line}"
 	logger.info(f"User {ctx.author} requested time command: {message_line}")
 	await ctx.send(message_content)
 
-def hours_to_dawn(game_current_hour):
+def hours_to_restart():
+	time_now = datetime.datetime.now()
+	# restart_hours = [1, 7, 13, 19]
+	if time_now.hour >= 19:
+		restart_date = datetime.datetime.now().replace(hour=1, minute=0) + datetime.timedelta(days=1)
+	elif time_now.hour >= 13:
+		restart_date = datetime.datetime.now().replace(hour=19, minute=0)
+	elif time_now.hour >= 7:
+		restart_date = datetime.datetime.now().replace(hour=13, minute=0)
+	else:
+		restart_date = datetime.datetime.now().replace(hour=7, minute=0)
+	time_to_restart = restart_date - time_now
+	hours_left, remainder = divmod(time_to_restart.seconds, 3600)
+	minutes_left, seconds_left = divmod(remainder, 60)
+	return(f" time to restart {hours_left:02d}:{minutes_left:02d}")
+
+def hours_to_dawn(game_current_hour : str):
 	if game_current_hour > 21:
 		game_hours_to_dawn = 24 - game_current_hour + 6
 	elif game_current_hour < 6:
-		game_hours_to_dawn = game_current_hour
-	if game_hours_to_dawn:
-		real_hours_to_dawn = game_hours_to_dawn / 3.84 # Joachim approved number 
-		hours, remainder = divmod(real_hours_to_dawn, 1)
-		minutes = int(remainder * 60)
-		message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
-		return message
-	return ""
+		game_hours_to_dawn = 6 - game_current_hour
+	else:
+		return ""
+	real_hours_to_dawn = game_hours_to_dawn / 3.84 # Joachim approved number 
+	hours, remainder = divmod(real_hours_to_dawn, 1)
+	minutes = int(remainder * 60)
+	message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
+	return message
 		
 
 bot.run(TOKEN)

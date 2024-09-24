@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.7-slim-buster
 FROM gorialis/discord.py
 
 ENV PYTHONUNBUFFERED=1
@@ -13,6 +13,7 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # run app
-COPY . .
+COPY .env .env
+COPY bot.py bot.py
 
 CMD [ "python3", "-u", "bot.py" ]

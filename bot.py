@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+SCUM_CHANNEL_ID = 1068864472262901842
 
 logging.basicConfig(
 	level=logging.DEBUG,
@@ -58,7 +59,11 @@ async def time(ctx, server_id: int = 28487222):
 	url_line = f"{battlemetrics_url}"
 	message_content = f"{message_line}\n{url_line}"
 	logger.info(f"User {ctx.author} requested time command: {message_line}")
-	await ctx.send(message_content)
+	if ctx.channel.id == SCUM_CHANNEL_ID:	
+		await ctx.send(message_content)
+	else:
+		silly_apology = f"Bah! I'm not supposed to send message on the channel {ctx.channel.name}. However, here's data you requested\n{message_content}"
+		await ctx.author.send(silly_apology)
 
 def hours_to_restart():
 	time_now = datetime.datetime.now()

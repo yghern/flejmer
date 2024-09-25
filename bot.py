@@ -1,12 +1,12 @@
 # bot.py
+import asyncio
 import datetime
-import json
 import logging
 import os
 import requests
 
 import discord
-import discord.ext.commands
+from discord.ext import commands, tasks
 
 from dotenv import load_dotenv
 
@@ -15,7 +15,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 SCUM_CHANNEL_ID = 1068864472262901842
 
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.INFO,
 	format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s"
 )
 
@@ -25,35 +25,45 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = discord.ext.commands.Bot(intents=intents, command_prefix="$")
+class Flamer(commands.Bot):
+	def __init__(self, *args, **kwargs):
+		super().__init__(intents=intents, command_prefix="$", *args, **kwargs)
 
+	async def on_ready(self): # EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLINE TO ONLINE
+		guild_count = 0 # CREATES A COUNTER TO KEEP TRACK OF HOW MANY GUILDS / SERVERS THE BOT IS CONNECTED TO
+		for guild in self.guilds: # LOOPS THROUGH ALL THE GUILD / SERVERS THAT THE BOT IS ASSOCIATED WITH
+			logger.info(f"- {guild.id} (name: {guild.name})") # PRINT THE SERVER'S ID AND NAME
+			guild_count = guild_count + 1 # INCREMENTS THE GUILD COUNTER
+		logger.info("Flejmer is in " + str(guild_count) + " guilds.") # PRINTS HOW MANY GUILDS / SERVERS THE BOT IS IN
 
-@bot.event
-async def on_ready(): # EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLINE TO ONLINE
-	guild_count = 0 # CREATES A COUNTER TO KEEP TRACK OF HOW MANY GUILDS / SERVERS THE BOT IS CONNECTED TO
-	for guild in bot.guilds: # LOOPS THROUGH ALL THE GUILD / SERVERS THAT THE BOT IS ASSOCIATED WITH
-		logger.info(f"- {guild.id} (name: {guild.name})") # PRINT THE SERVER'S ID AND NAME
-		guild_count = guild_count + 1 # INCREMENTS THE GUILD COUNTER
-	logger.info("Flejmer is in " + str(guild_count) + " guilds.") # PRINTS HOW MANY GUILDS / SERVERS THE BOT IS IN
+	async def setup_hook(self) -> None:
+		self.bg_task = self.loop.create_task(self.update_status())
 
+	async def update_status(self):
+		await self.wait_until_ready()
+		while not self.is_closed():
+			response = requests.get(f"https://api.battlemetrics.com/servers/28487222")
+			data = response.json()
+			server_time = data["data"]["attributes"]["details"]["time"]
+			server_players = data["data"]["attributes"]["players"]
+			status = f"Game time is {server_time} players {server_players}"
+			logger.info(f"Updating own status with {status}")
+			await self.change_presence(activity=discord.CustomActivity(name=status))
+			await asyncio.sleep(120)
 
-#@bot.event 
-#async def on_message(message): # EVENT LISTENER FOR WHEN A NEW MESSAGE IS SENT TO A CHANNEL
-#	print("on_message processing")
-#	if message.content == "hello": # CHECKS IF THE MESSAGE THAT WAS SENT IS EQUAL TO "HELLO"
-#		await message.channel.send("hey dirtbag") # SENDS BACK A MESSAGE TO THE CHANNEL
+flamer = Flamer()	
 
-@bot.command(name="time", help="Displays basic stats for scum server <int, defaults to 28487222 (Palfy)>")
+@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 28487222 (Palfy)>")
 async def time(ctx, server_id: int = 28487222):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
-	response = json.loads(response.text)
-	server_name = response["data"]["attributes"]["name"]
-	server_time = response["data"]["attributes"]["details"]["time"]
+	data = response.json()
+	server_name = data["data"]["attributes"]["name"]
+	server_time = data["data"]["attributes"]["details"]["time"]
 	server_time_hours = int(server_time.split(":")[0])
 	time_to_dawn = hours_to_dawn(server_time_hours)
 	time_to_restart = hours_to_restart()
-	server_players = response["data"]["attributes"]["players"]
-	server_maxplayers = response["data"]["attributes"]["maxPlayers"]
+	server_players = data["data"]["attributes"]["players"]
+	server_maxplayers = data["data"]["attributes"]["maxPlayers"]
 	battlemetrics_url = f"https://www.battlemetrics.com/servers/scum/{server_id}"
 	message_line = f"{server_name} current time {server_time}{time_to_dawn} active players {server_players}/{server_maxplayers}{time_to_restart}"
 	url_line = f"{battlemetrics_url}"
@@ -61,6 +71,9 @@ async def time(ctx, server_id: int = 28487222):
 	logger.info(f"User {ctx.author} requested time command: {message_line}")
 	if ctx.channel.id == SCUM_CHANNEL_ID:	
 		await ctx.send(message_content)
+	elif isinstance(ctx.channel, discord.channel.DMChannel):
+		priv_message = f"Ok, just you and me:\n{message_content}"
+		await ctx.send(priv_message)	
 	else:
 		silly_apology = f"Bah! I'm not supposed to send message on the channel {ctx.channel.name}. However, here's data you requested\n{message_content}"
 		await ctx.author.send(silly_apology)
@@ -93,6 +106,5 @@ def hours_to_dawn(game_current_hour : str):
 	minutes = int(remainder * 60)
 	message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
 	return message
-		
 
-bot.run(TOKEN)
+flamer.run(TOKEN)

@@ -19,7 +19,8 @@ logging.basicConfig(
 	format="%(asctime)s %(levelname)-8s %(name)-15s %(message)s"
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("flejmer")
+logger.setLevel(logging.INFO)
 
 intents = discord.Intents.default()
 intents.members = True

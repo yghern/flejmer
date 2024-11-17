@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("flejmer")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 intents = discord.Intents.default()
 intents.members = True
@@ -36,6 +36,11 @@ class Flamer(commands.Bot):
 			logger.info(f"- {guild.id} (name: {guild.name})") # PRINT THE SERVER'S ID AND NAME
 			guild_count = guild_count + 1 # INCREMENTS THE GUILD COUNTER
 		logger.info("Flejmer is in " + str(guild_count) + " guilds.") # PRINTS HOW MANY GUILDS / SERVERS THE BOT IS IN
+
+	async def on_message(self, message):
+		await self.process_commands(message)
+		if self.user.mentioned_in(message):
+			await message.add_reaction(":love:1276852873405403167")
 
 	async def setup_hook(self) -> None:
 		self.bg_task = self.loop.create_task(self.update_status())
@@ -108,4 +113,5 @@ def hours_to_dawn(game_current_hour : str):
 	message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
 	return message
 
+logger.debug(f"Trying to start bot with a token ${TOKEN}")
 flamer.run(TOKEN)

@@ -13,6 +13,6 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # run app
-COPY bot.py bot.py
+COPY . .
 
 CMD [ "python3", "-u", "bot.py" ]

@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 SCUM_CHANNEL_ID = 1068864472262901842
+VALHEIM_CHANNEL_ID = 1299271046762856468
 
 logging.basicConfig(
 	level=logging.INFO,
@@ -40,7 +41,14 @@ class Flamer(commands.Bot):
 	async def on_message(self, message):
 		await self.process_commands(message)
 		if self.user.mentioned_in(message):
+			logger.info(f"sending reaction to {message.channel} because of message {message.content}")
 			await message.add_reaction(":love:1276852873405403167")
+		if message.channel.id == VALHEIM_CHANNEL_ID:
+			if ":serwer:1314317521322639382" in message.content:
+				await message.add_reaction(":serwer:1314317521322639382")
+				admin_user = await self.fetch_user("400016234189684741")
+				logger.info(f"detected server troubles, sending dm to {admin_user.name}")
+				await admin_user.send("oh noes, check the server!!!1")
 
 	async def setup_hook(self) -> None:
 		self.bg_task = self.loop.create_task(self.update_status())
@@ -113,5 +121,6 @@ def hours_to_dawn(game_current_hour : str):
 	message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
 	return message
 
-logger.debug(f"Trying to start bot with a token ${TOKEN}")
+TOKEN_MASKED = TOKEN[0:10] if len(TOKEN) > 11 else TOKEN
+logger.debug(f"Trying to start bot with a token ${TOKEN_MASKED}")
 flamer.run(TOKEN)

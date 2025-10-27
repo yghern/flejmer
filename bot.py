@@ -56,7 +56,7 @@ class Flamer(commands.Bot):
 	async def update_status(self):
 		await self.wait_until_ready()
 		while not self.is_closed():
-			response = requests.get(f"https://api.battlemetrics.com/servers/28487222")
+			response = requests.get(f"https://api.battlemetrics.com/servers/32153423")
 			data = response.json()
 			server_time = data["data"]["attributes"]["details"]["time"]
 			server_players = data["data"]["attributes"]["players"]
@@ -67,8 +67,8 @@ class Flamer(commands.Bot):
 
 flamer = Flamer()	
 
-@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 28487222 (Palfy)>")
-async def time(ctx, server_id: int = 28487222):
+@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 32153423 (The Cartel)>")
+async def time(ctx, server_id: int = 32153423):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
 	data = response.json()
 	server_name = data["data"]["attributes"]["name"]

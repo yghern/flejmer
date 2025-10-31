@@ -63,12 +63,12 @@ class Flamer(commands.Bot):
 			status = f"Game time is {server_time} players {server_players}"
 			logger.info(f"Updating own status with {status}")
 			await self.change_presence(activity=discord.CustomActivity(name=status))
-			await asyncio.sleep(120)
+			await asyncio.sleep(180)
 
 flamer = Flamer()	
 
-@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 32153423 (The Cartel)>")
-async def time(ctx, server_id: int = 32153423):
+@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 33902513 (SCUM Server Official Solo / Duo #1 - Europe)>")
+async def time(ctx, server_id: int = 33902513):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
 	data = response.json()
 	server_name = data["data"]["attributes"]["name"]
@@ -95,14 +95,14 @@ async def time(ctx, server_id: int = 32153423):
 def hours_to_restart():
 	time_now = datetime.datetime.now()
 	# restart_hours = [1, 7, 13, 19]
-	if time_now.hour >= 19:
-		restart_date = datetime.datetime.now().replace(hour=1, minute=0) + datetime.timedelta(days=1)
-	elif time_now.hour >= 13:
-		restart_date = datetime.datetime.now().replace(hour=19, minute=0)
-	elif time_now.hour >= 7:
-		restart_date = datetime.datetime.now().replace(hour=13, minute=0)
+	if time_now.hour >= 22 or time_now.hour < 4:
+		restart_date = datetime.datetime.now().replace(hour=4, minute=0) + datetime.timedelta(days=1)
+	elif time_now.hour >= 16:
+		restart_date = datetime.datetime.now().replace(hour=22, minute=0)
+	elif time_now.hour >= 10:
+		restart_date = datetime.datetime.now().replace(hour=16, minute=0)
 	else:
-		restart_date = datetime.datetime.now().replace(hour=7, minute=0)
+		restart_date = datetime.datetime.now().replace(hour=10, minute=0)
 	time_to_restart = restart_date - time_now
 	hours_left, remainder = divmod(time_to_restart.seconds, 3600)
 	minutes_left, seconds_left = divmod(remainder, 60)

@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 SCUM_CHANNEL_ID = 1068864472262901842
+SCUM_DEFAULT_SERVER = 34632624 # No Way Back EU
 VALHEIM_CHANNEL_ID = 1299271046762856468
 
 logging.basicConfig(
@@ -56,19 +57,19 @@ class Flamer(commands.Bot):
 	async def update_status(self):
 		await self.wait_until_ready()
 		while not self.is_closed():
-			response = requests.get(f"https://api.battlemetrics.com/servers/34632624")
+			response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}")
 			data = response.json()
 			server_time = data["data"]["attributes"]["details"]["time"]
 			server_players = data["data"]["attributes"]["players"]
 			status = f"Game time is {server_time} players {server_players}"
 			logger.info(f"Updating own status with {status}")
 			await self.change_presence(activity=discord.CustomActivity(name=status))
-			await asyncio.sleep(120)
+			await asyncio.sleep(180)
 
 flamer = Flamer()	
 
-@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 34632624 (No Way Back EU)>")
-async def time(ctx, server_id: int = 34632624):
+@flamer.command(name="time", help=f"Displays basic stats for scum server <int, defaults to {SCUM_DEFAULT_SERVER}>")
+async def time(ctx, server_id: int = SCUM_DEFAULT_SERVER):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
 	data = response.json()
 	server_name = data["data"]["attributes"]["name"]

@@ -56,7 +56,7 @@ class Flamer(commands.Bot):
 	async def update_status(self):
 		await self.wait_until_ready()
 		while not self.is_closed():
-			response = requests.get(f"https://api.battlemetrics.com/servers/28487222")
+			response = requests.get(f"https://api.battlemetrics.com/servers/34632624")
 			data = response.json()
 			server_time = data["data"]["attributes"]["details"]["time"]
 			server_players = data["data"]["attributes"]["players"]
@@ -67,8 +67,8 @@ class Flamer(commands.Bot):
 
 flamer = Flamer()	
 
-@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 28487222 (Palfy)>")
-async def time(ctx, server_id: int = 28487222):
+@flamer.command(name="time", help="Displays basic stats for scum server <int, defaults to 34632624 (No Way Back EU)>")
+async def time(ctx, server_id: int = 34632624):
 	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
 	data = response.json()
 	server_name = data["data"]["attributes"]["name"]
@@ -94,15 +94,19 @@ async def time(ctx, server_id: int = 28487222):
 
 def hours_to_restart():
 	time_now = datetime.datetime.now()
-	# restart_hours = [1, 7, 13, 19]
-	if time_now.hour >= 19:
-		restart_date = datetime.datetime.now().replace(hour=1, minute=0) + datetime.timedelta(days=1)
-	elif time_now.hour >= 13:
-		restart_date = datetime.datetime.now().replace(hour=19, minute=0)
-	elif time_now.hour >= 7:
-		restart_date = datetime.datetime.now().replace(hour=13, minute=0)
+	# 12:00 | 16:00 | 20:00 | 00:00 | 04:00 | 08:00
+	if time_now.hour >= 20:
+		restart_date = datetime.datetime.now().replace(hour=0, minute=0) + datetime.timedelta(days=1)
+	elif time_now.hour >= 16:
+		restart_date = datetime.datetime.now().replace(hour=20, minute=0)
+	elif time_now.hour >= 12:
+		restart_date = datetime.datetime.now().replace(hour=16, minute=0)
+	elif time_now.hour >= 8:
+		restart_date = datetime.datetime.now().replace(hour=12, minute=0)
+	elif time_now.hour >= 4:
+		restart_date = datetime.datetime.now().replace(hour=8, minute=0)
 	else:
-		restart_date = datetime.datetime.now().replace(hour=7, minute=0)
+		restart_date = datetime.datetime.now().replace(hour=4, minute=0)
 	time_to_restart = restart_date - time_now
 	hours_left, remainder = divmod(time_to_restart.seconds, 3600)
 	minutes_left, seconds_left = divmod(remainder, 60)

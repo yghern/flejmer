@@ -1,4 +1,4 @@
-FROM python:3.7-slim-buster
+FROM python:alpine
 FROM gorialis/discord.py
 
 ENV PYTHONUNBUFFERED=1

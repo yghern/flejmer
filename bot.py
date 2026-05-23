@@ -55,6 +55,7 @@ class Flamer(commands.Bot):
 		self.bg_task = self.loop.create_task(self.update_status())
 
 	async def update_status(self):
+		logger.info("waiting until ready...")
 		await self.wait_until_ready()
 		while not self.is_closed():
 			response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}")
@@ -62,8 +63,9 @@ class Flamer(commands.Bot):
 			server_time = data["data"]["attributes"]["details"]["time"]
 			server_players = data["data"]["attributes"]["players"]
 			status = f"Game time is {server_time} players {server_players}"
-			logger.info(f"Updating own status with {status}")
+			logger.info(f"Updating own status with {status} ({SCUM_DEFAULT_SERVER})")
 			await self.change_presence(activity=discord.CustomActivity(name=status))
+			logger.info("Sleeping 180")
 			await asyncio.sleep(180)
 
 flamer = Flamer()	
@@ -95,25 +97,26 @@ async def time(ctx, server_id: int = SCUM_DEFAULT_SERVER):
 
 def hours_to_restart():
 	time_now = datetime.datetime.now()
-	# 12:00 | 16:00 | 20:00 | 00:00 | 04:00 | 08:00
-	if time_now.hour >= 20:
-		restart_date = datetime.datetime.now().replace(hour=0, minute=0) + datetime.timedelta(days=1)
-	elif time_now.hour >= 16:
-		restart_date = datetime.datetime.now().replace(hour=20, minute=0)
-	elif time_now.hour >= 12:
-		restart_date = datetime.datetime.now().replace(hour=16, minute=0)
-	elif time_now.hour >= 8:
-		restart_date = datetime.datetime.now().replace(hour=12, minute=0)
-	elif time_now.hour >= 4:
-		restart_date = datetime.datetime.now().replace(hour=8, minute=0)
+	# 12:00 | 16:00 | 20:00 | 00:00 | 04:00 | 08:00 UTC
+	# 14:00 | 18:00 | 22:00 | 02:00 | 06:00 | 10:00 CET
+	if time_now.hour >= 22:
+		restart_date = datetime.datetime.now().replace(hour=2, minute=0) + datetime.timedelta(days=1)
+	elif time_now.hour >= 18:
+		restart_date = datetime.datetime.now().replace(hour=22, minute=0)
+	elif time_now.hour >= 14:
+		restart_date = datetime.datetime.now().replace(hour=18, minute=0)
+	elif time_now.hour >= 10:
+		restart_date = datetime.datetime.now().replace(hour=14, minute=0)
+	elif time_now.hour >= 6:
+		restart_date = datetime.datetime.now().replace(hour=10, minute=0)
 	else:
-		restart_date = datetime.datetime.now().replace(hour=4, minute=0)
+		restart_date = datetime.datetime.now().replace(hour=6, minute=0)
 	time_to_restart = restart_date - time_now
 	hours_left, remainder = divmod(time_to_restart.seconds, 3600)
 	minutes_left, seconds_left = divmod(remainder, 60)
 	return(f" time to restart {hours_left:02d}:{minutes_left:02d}")
 
-def hours_to_dawn(game_current_hour : str):
+def hours_to_dawn(game_current_hour : int):
 	if game_current_hour > 21:
 		game_hours_to_dawn = 24 - game_current_hour + 6
 	elif game_current_hour < 6:

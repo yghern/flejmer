@@ -3,6 +3,8 @@ import asyncio
 import datetime
 import logging
 import os
+import traceback
+
 import requests
 
 import discord
@@ -58,14 +60,21 @@ class Flamer(commands.Bot):
 		logger.info("waiting until ready...")
 		await self.wait_until_ready()
 		while not self.is_closed():
-			response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}")
-			data = response.json()
-			server_time = data["data"]["attributes"]["details"]["time"]
-			server_players = data["data"]["attributes"]["players"]
-			status = f"Game time is {server_time} players {server_players}"
-			logger.info(f"Updating own status with {status} ({SCUM_DEFAULT_SERVER})")
-			await self.change_presence(activity=discord.CustomActivity(name=status))
-			logger.info("Sleeping 180")
+			logger.info("reading data...")
+			try:
+				response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}", timeout=15)
+				logger.info("parsing data...")
+				data = response.json()
+				server_time = data["data"]["attributes"]["details"]["time"]
+				server_players = data["data"]["attributes"]["players"]
+				status = f"Game time is {server_time} players {server_players}"
+				logger.info(f"updating own status with {status} ({SCUM_DEFAULT_SERVER})")
+				await self.change_presence(activity=discord.CustomActivity(name=status))
+			except requests.exceptions.Timeout:
+				logger.info("get timed out response")
+			except Exception as e:
+				logger.info(f"unexpected response:\n{traceback.format_exception(e)}")
+			logger.info("sleeping 180...")
 			await asyncio.sleep(180)
 
 flamer = Flamer()	

@@ -13,6 +13,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
 SCUM_CHANNEL_ID = 1068864472262901842
 SCUM_DEFAULT_SERVER = 34632624 # No Way Back EU
@@ -126,10 +127,10 @@ def hours_to_restart():
 	return(f" time to restart {hours_left:02d}:{minutes_left:02d}")
 
 def hours_to_dawn(game_current_hour : int):
-	if game_current_hour > 21:
-		game_hours_to_dawn = 24 - game_current_hour + 6
-	elif game_current_hour < 6:
-		game_hours_to_dawn = 6 - game_current_hour
+	if game_current_hour > 23:
+		game_hours_to_dawn = 24 - game_current_hour + 4
+	elif game_current_hour < 4:
+		game_hours_to_dawn = 4 - game_current_hour
 	else:
 		return ""
 	real_hours_to_dawn = game_hours_to_dawn / 3.84 # Joachim approved number 

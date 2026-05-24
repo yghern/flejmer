@@ -63,7 +63,7 @@ class Flamer(commands.Bot):
 			logger.info("reading data...")
 			try:
 				response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}", timeout=15)
-				logger.info("parsing data...")
+				logger.info(f"parsing data for {response.status_code} response...")
 				data = response.json()
 				server_time = data["data"]["attributes"]["details"]["time"]
 				server_players = data["data"]["attributes"]["players"]

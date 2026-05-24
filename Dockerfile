@@ -1,5 +1,4 @@
 FROM python:alpine
-FROM gorialis/discord.py
 
 ENV PYTHONUNBUFFERED=1
 ENV TZ="Europe/Warsaw"

@@ -30,7 +30,6 @@ logger = logging.getLogger("flejmer")
 logger.setLevel(logging.DEBUG)
 
 intents = discord.Intents.default()
-intents.members = True
 intents.message_content = True
 
 class Flamer(commands.Bot):
@@ -67,6 +66,7 @@ class Flamer(commands.Bot):
 			try:
 				response = await asyncio.to_thread(requests.get, f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}", timeout=15)
 				logger.info(f"parsing data for {response.status_code} response...")
+				response.raise_for_status()
 				data = response.json()
 				server_time = data["data"]["attributes"]["details"]["time"]
 				server_players = data["data"]["attributes"]["players"]

@@ -123,21 +123,23 @@ def hours_to_restart():
 	# 12:00 | 16:00 | 20:00 | 00:00 | 04:00 | 08:00 UTC
 	# 14:00 | 18:00 | 22:00 | 02:00 | 06:00 | 10:00 CET
 	if time_now.hour >= 22:
-		restart_date = datetime.datetime.now().replace(hour=2, minute=0) + datetime.timedelta(days=1)
+		restart_date = time_now.replace(hour=2, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
 	elif time_now.hour >= 18:
-		restart_date = datetime.datetime.now().replace(hour=22, minute=0)
+		restart_date = time_now.replace(hour=22, minute=0, second=0, microsecond=0)
 	elif time_now.hour >= 14:
-		restart_date = datetime.datetime.now().replace(hour=18, minute=0)
+		restart_date = time_now.replace(hour=18, minute=0, second=0, microsecond=0)
 	elif time_now.hour >= 10:
-		restart_date = datetime.datetime.now().replace(hour=14, minute=0)
+		restart_date = time_now.replace(hour=14, minute=0, second=0, microsecond=0)
 	elif time_now.hour >= 6:
-		restart_date = datetime.datetime.now().replace(hour=10, minute=0)
+		restart_date = time_now.replace(hour=10, minute=0, second=0, microsecond=0)
+	elif time_now.hour >= 2:
+		restart_date = time_now.replace(hour=6, minute=0, second=0, microsecond=0)
 	else:
-		restart_date = datetime.datetime.now().replace(hour=6, minute=0)
-	time_to_restart = restart_date - time_now
-	hours_left, remainder = divmod(time_to_restart.seconds, 3600)
-	minutes_left, seconds_left = divmod(remainder, 60)
-	return(f" time to restart {hours_left:02d}:{minutes_left:02d}")
+		restart_date = time_now.replace(hour=2, minute=0, second=0, microsecond=0)
+	total_seconds = int((restart_date - time_now).total_seconds())
+	hours_left, remainder = divmod(total_seconds, 3600)
+	minutes_left, _ = divmod(remainder, 60)
+	return f" time to restart {hours_left:02d}:{minutes_left:02d}"
 
 def hours_to_dawn(game_current_hour : int):
 	if game_current_hour > 23:

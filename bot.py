@@ -84,15 +84,26 @@ flamer = Flamer()
 
 @flamer.command(name="time", help=f"Displays basic stats for scum server <int, defaults to {SCUM_DEFAULT_SERVER}>")
 async def time(ctx, server_id: int = SCUM_DEFAULT_SERVER):
-	response = await asyncio.to_thread(requests.get, f"https://api.battlemetrics.com/servers/{server_id}", timeout=15)
-	data = response.json()
-	server_name = data["data"]["attributes"]["name"]
-	server_time = data["data"]["attributes"]["details"]["time"]
-	server_time_hours = int(server_time.split(":")[0])
+	try:
+		response = await asyncio.to_thread(requests.get, f"https://api.battlemetrics.com/servers/{server_id}", timeout=15)
+		response.raise_for_status()
+		data = response.json()
+		attributes = data["data"]["attributes"]
+		server_name = attributes["name"]
+		server_time = attributes["details"]["time"]
+		server_time_hours = int(server_time.split(":")[0])
+		server_players = attributes["players"]
+		server_maxplayers = attributes["maxPlayers"]
+	except requests.exceptions.RequestException:
+		logger.exception(f"BattleMetrics request failed for server {server_id}")
+		await ctx.send("Couldn't fetch server data from BattleMetrics. Check the server ID or try again later.")
+		return
+	except (ValueError, KeyError, TypeError, AttributeError):
+		logger.exception(f"Unexpected BattleMetrics response for server {server_id}")
+		await ctx.send("BattleMetrics returned unexpected server data. Please try again later.")
+		return
 	time_to_dawn = hours_to_dawn(server_time_hours)
 	time_to_restart = hours_to_restart()
-	server_players = data["data"]["attributes"]["players"]
-	server_maxplayers = data["data"]["attributes"]["maxPlayers"]
 	battlemetrics_url = f"https://www.battlemetrics.com/servers/scum/{server_id}"
 	message_line = f"{server_name} current time {server_time}{time_to_dawn} active players {server_players}/{server_maxplayers}{time_to_restart}"
 	url_line = f"{battlemetrics_url}"

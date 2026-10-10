@@ -65,7 +65,7 @@ class Flamer(commands.Bot):
 		while not self.is_closed():
 			logger.info("reading data...")
 			try:
-				response = requests.get(f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}", timeout=15)
+				response = await asyncio.to_thread(requests.get, f"https://api.battlemetrics.com/servers/{SCUM_DEFAULT_SERVER}", timeout=15)
 				logger.info(f"parsing data for {response.status_code} response...")
 				data = response.json()
 				server_time = data["data"]["attributes"]["details"]["time"]
@@ -84,7 +84,7 @@ flamer = Flamer()
 
 @flamer.command(name="time", help=f"Displays basic stats for scum server <int, defaults to {SCUM_DEFAULT_SERVER}>")
 async def time(ctx, server_id: int = SCUM_DEFAULT_SERVER):
-	response = requests.get(f"https://api.battlemetrics.com/servers/{server_id}")
+	response = await asyncio.to_thread(requests.get, f"https://api.battlemetrics.com/servers/{server_id}", timeout=15)
 	data = response.json()
 	server_name = data["data"]["attributes"]["name"]
 	server_time = data["data"]["attributes"]["details"]["time"]

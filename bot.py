@@ -48,10 +48,10 @@ class Flamer(commands.Bot):
 		await self.process_commands(message)
 		if self.user.mentioned_in(message):
 			logger.info(f"sending reaction to {message.channel} because of message {message.content}")
-			await message.add_reaction(":love:1276852873405403167")
+			await message.add_reaction("<:love:1276852873405403167>")
 		if message.channel.id == VALHEIM_CHANNEL_ID:
-			if ":serwer:1314317521322639382" in message.content:
-				await message.add_reaction(":serwer:1314317521322639382")
+			if "<:serwer:1314317521322639382>" in message.content:
+				await message.add_reaction("<:serwer:1314317521322639382>")
 				admin_user = await self.fetch_user("400016234189684741")
 				logger.info(f"detected server troubles, sending dm to {admin_user.name}")
 				await admin_user.send("oh noes, check the server!!!1")

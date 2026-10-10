@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
+if not TOKEN:
+	raise RuntimeError("DISCORD_TOKEN is required; set it in the environment or .env file.")
 SCUM_CHANNEL_ID = 1068864472262901842
 SCUM_DEFAULT_SERVER = 34632624 # No Way Back EU
 VALHEIM_CHANNEL_ID = 1299271046762856468
@@ -139,6 +141,5 @@ def hours_to_dawn(game_current_hour : int):
 	message = f" ({datetime.time(int(hours), minutes).strftime("%H:%M")}h until dawn)"
 	return message
 
-TOKEN_MASKED = TOKEN[0:10] if len(TOKEN) > 11 else TOKEN
-logger.debug(f"Trying to start bot with a token ${TOKEN_MASKED}")
+logger.debug("Starting bot with configured DISCORD_TOKEN.")
 flamer.run(TOKEN)
